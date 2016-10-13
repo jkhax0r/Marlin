@@ -48,11 +48,14 @@ bool  Endstops::enabled = true,
       ;
 volatile char Endstops::endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_PROBE as BIT value
 
-#if ENABLED(Z_DUAL_ENDSTOPS)
+bool Endstops::use_z1_pin = true;
+bool Endstops::use_z2_pin = false;
+
+//#if ENABLED(Z_DUAL_ENDSTOPS)
   uint16_t
-#else
-  byte
-#endif
+//#else
+//  byte
+//#endif
     Endstops::current_endstop_bits = 0,
     Endstops::old_endstop_bits = 0;
 
@@ -213,6 +216,10 @@ void Endstops::M119() {
     SERIAL_PROTOCOLPGM(MSG_Z_PROBE);
     SERIAL_PROTOCOLLN(((READ(Z_MIN_PROBE_PIN)^Z_MIN_PROBE_ENDSTOP_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
   #endif
+  #if HAS_Z2_MIN
+    SERIAL_PROTOCOLPGM("z2min: ");
+    SERIAL_PROTOCOLLN(((READ(Z2_MIN_PIN)^Z2_MIN_ENDSTOP_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
+  #endif
 } // Endstops::M119
 
 #if ENABLED(Z_DUAL_ENDSTOPS)
@@ -230,6 +237,7 @@ void Endstops::M119() {
 
 #endif
 
+
 // Check endstops - Called from ISR!
 void Endstops::update() {
 
@@ -240,9 +248,19 @@ void Endstops::update() {
 
   // UPDATE_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
   #define UPDATE_ENDSTOP_BIT(AXIS, MINMAX) SET_BIT(current_endstop_bits, _ENDSTOP(AXIS, MINMAX), (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)))
+  
   // COPY_BIT: copy the value of COPY_BIT to BIT in bits
   #define COPY_BIT(bits, COPY_BIT, BIT) SET_BIT(bits, BIT, TEST(bits, COPY_BIT))
 
+  #define UPDATE_DUAL_ENDSTOP_JK(AXIS,AXIS2,MINMAX) do { \
+      UPDATE_ENDSTOP_BIT(AXIS, MINMAX); \
+      UPDATE_ENDSTOP_BIT(AXIS2, MINMAX); \
+      if ((TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX)) || TEST_ENDSTOP(_ENDSTOP(AXIS2, MINMAX))) && stepper.current_block->steps[_AXIS(AXIS)] > 0) { \
+        _ENDSTOP_HIT(AXIS); \
+        stepper.endstop_triggered(_AXIS(AXIS)); \
+      } \
+    } while(0)
+  
   #define UPDATE_ENDSTOP(AXIS,MINMAX) do { \
       UPDATE_ENDSTOP_BIT(AXIS, MINMAX); \
       if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX)) && stepper.current_block->steps[_AXIS(AXIS)] > 0) { \
@@ -331,18 +349,63 @@ void Endstops::update() {
 
           #else // !Z_DUAL_ENDSTOPS
 
-            #if HAS_BED_PROBE && ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
-              if (z_probe_enabled) UPDATE_ENDSTOP(Z, MIN);
+          
+            #if HAS_Z2_MIN  
+                
+                
+                
+                //UPDATE_DUAL_ENDSTOP_JK(Z, Z2, MIN);   
+
+                if (Endstops::use_z2_pin) {
+                    UPDATE_ENDSTOP_BIT(Z2, MIN);
+                    if (TEST_ENDSTOP(_ENDSTOP(Z2, MIN)) && stepper.current_block->steps[_AXIS(Z)] > 0) {
+                        _ENDSTOP_HIT(Z);
+                        stepper.endstop_triggered(_AXIS(Z));
+                    }
+                } else {
+                    UPDATE_ENDSTOP(Z, MIN);
+                }
+                
+                
+                //SERIAL_ECHOLNPGM("Read1: ");      
+                /*if (READ(_ENDSTOP_PIN(Z, MIN)) != 1) {
+                    SERIAL_ECHO_START;
+                    //if (READ(_ENDSTOP_PIN(Z, MIN))) {                    
+                   //     SERIAL_ECHO("Z1: 1 ");
+                   // } else {
+                        SERIAL_ECHO("Z1: 0 ");
+                    //}
+                    SERIAL_EOL;
+                }
+                
+                if (READ(_ENDSTOP_PIN(Z2, MIN)) != 1) {
+                    SERIAL_ECHO_START;
+                    //if (READ(_ENDSTOP_PIN(Z2, MIN))) {                    
+                    //    SERIAL_ECHO("Z2: 1 ");
+                    //} else {
+                        SERIAL_ECHO("Z2: 0 ");
+                    //}
+                    SERIAL_EOL;
+                }*/
+                
+                
+                
+                
+                //READ(_ENDSTOP_PIN(AXIS, MINMAX)) | READ(_ENDSTOP_PIN(AXIS2, MINMAX                
+                          
+            #elif HAS_BED_PROBE && ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
+              /*if (z_probe_enabled)*/ UPDATE_ENDSTOP(Z, MIN);
             #else
               UPDATE_ENDSTOP(Z, MIN);
             #endif
+            
 
           #endif // !Z_DUAL_ENDSTOPS
 
         #endif // HAS_Z_MIN
 
         #if HAS_BED_PROBE && ENABLED(Z_MIN_PROBE_ENDSTOP) && DISABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
-          if (z_probe_enabled) {
+          if (z_probe_enabled) {sdfasdf
             UPDATE_ENDSTOP(Z, MIN_PROBE);
             if (TEST_ENDSTOP(Z_MIN_PROBE)) SBI(endstop_hit_bits, Z_MIN_PROBE);
           }

@@ -237,6 +237,25 @@
   #elif MESH_NUM_X_POINTS > 9 || MESH_NUM_Y_POINTS > 9
     #error "MESH_NUM_X_POINTS and MESH_NUM_Y_POINTS must be less than 10."
   #endif
+  
+  #if ENABLED(MESH_AUTO_LEVELING)
+      #if MESH_MIN_X - X_PROBE_OFFSET_FROM_EXTRUDER < X_MIN_POS 
+            #error Due to X_PROBE_OFFSET_FROM_EXTRUDER, extruder would need to travel to < X_MIN_POS for MESH_MIN_X
+      #endif  
+      #if MESH_MAX_X - X_PROBE_OFFSET_FROM_EXTRUDER > X_MAX_POS 
+            #error Due to X_PROBE_OFFSET_FROM_EXTRUDER, extruder would need to travel to > X_MAX_POS for MESH_MAX_X
+      #endif
+      #if MESH_MIN_Y - Y_PROBE_OFFSET_FROM_EXTRUDER < Y_MIN_POS 
+            #error Due to Y_PROBE_OFFSET_FROM_EXTRUDER, extruder would need to travel to < Y_MIN_POS for MESH_MIN_Y
+      #endif  
+      #if MESH_MAX_Y - Y_PROBE_OFFSET_FROM_EXTRUDER > Y_MAX_POS 
+            #error Due to Y_PROBE_OFFSET_FROM_EXTRUDER, extruder would need to travel to > Y_MAX_POS for MESH_MAX_Y
+      #endif
+  #endif
+  
+
+  
+  
 #elif ENABLED(MANUAL_BED_LEVELING)
   #error "MESH_BED_LEVELING is required for MANUAL_BED_LEVELING."
 #endif

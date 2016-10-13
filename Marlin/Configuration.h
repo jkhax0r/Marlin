@@ -86,7 +86,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_CONFIG_H_AUTHOR "(none, default config)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(Jonathan Kaufmann, 3dp-11)" // Who made the changes.
 #define SHOW_BOOTSCREEN
 #define STRING_SPLASH_LINE1 SHORT_BUILD_VERSION // will be shown during bootup in line 1
 #define STRING_SPLASH_LINE2 WEBSITE_URL         // will be shown during bootup in line 2
@@ -113,7 +113,8 @@
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,250000]
-#define BAUDRATE 250000
+//#define BAUDRATE 250000
+#define BAUDRATE 115200 // CL: for HIC i3, was =250000
 
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
@@ -121,12 +122,12 @@
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_RAMPS_14_EFB
+  #define MOTHERBOARD BOARD_MKS_13
 #endif
 
 // Optional custom name for your RepStrap or other custom machine
 // Displayed in the LCD "Ready" message
-//#define CUSTOM_MACHINE_NAME "3D Printer"
+//#define CUSTOM_MACHINE_NAME "Ready"
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
@@ -229,7 +230,7 @@
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
-#define TEMP_SENSOR_BED 0
+#define TEMP_SENSOR_BED 1 // CL: for HIC i3, was =0
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
@@ -257,11 +258,12 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
-#define HEATER_1_MAXTEMP 275
-#define HEATER_2_MAXTEMP 275
-#define HEATER_3_MAXTEMP 275
-#define BED_MAXTEMP 150
+#define HEATER_0_MAXTEMP 260 // CL: lower for HIC i3, was =275
+#define HEATER_1_MAXTEMP 260 // CL: lower for HIC i3, was =275
+#define HEATER_2_MAXTEMP 260 // CL: lower for HIC i3, was =275
+#define HEATER_3_MAXTEMP 260 // CL: lower for HIC i3, was =275
+#define BED_MAXTEMP 160 // CL: lower for HIC i3, was =150
+
 
 //===========================================================================
 //============================= PID Settings ================================
@@ -279,16 +281,27 @@
   //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
   //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
-  #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
+  #define PID_FUNCTIONAL_RANGE 20 // If the temperature difference between the target temperature and the actual temperature
                                   // is more than PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
   #define PID_INTEGRAL_DRIVE_MAX PID_MAX  //limit for the integral term
   #define K1 0.95 //smoothing factor within the PID
 
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
+  // Reprap link here for PID tuning: "http://reprap.org/wiki/PID_Tuning"
+
+  // CL: HICTOP i3 (China), post running PID tuning
+  //#define  DEFAULT_Kp 12.19
+  //#define  DEFAULT_Ki 0.50
+  //#define  DEFAULT_Kd 74.60
+  
+  #define  DEFAULT_Kp (12.19*1.5)
+  #define  DEFAULT_Ki (0.50*1.5)
+  #define  DEFAULT_Kd (74.60*1.5)
+
   // Ultimaker
-  #define  DEFAULT_Kp 22.2
-  #define  DEFAULT_Ki 1.08
-  #define  DEFAULT_Kd 114
+  //#define  DEFAULT_Kp 22.2
+  //#define  DEFAULT_Ki 1.08
+  //#define  DEFAULT_Kd 114
 
   // MakerGear
   //#define  DEFAULT_Kp 7.0
@@ -333,7 +346,7 @@
   //120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
   #define  DEFAULT_bedKp 10.00
-  #define  DEFAULT_bedKi .023
+  #define  DEFAULT_bedKi 0.023
   #define  DEFAULT_bedKd 305.4
 
   //120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
@@ -420,13 +433,15 @@
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-#define X_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Y_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Z_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define X_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Y_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Z_MIN_PROBE_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
+// CL: set all to =true for HIC i3, was all =false NOTE: need to upgrade to NC to ground switches!
+const bool X_MIN_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool Y_MIN_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool Z_MIN_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool X_MAX_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool Y_MAX_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool Z_MAX_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool Z_MIN_PROBE_ENDSTOP_INVERTING = true; // CL: set to true to invert the logic of the endstop. was =false
+const bool Z2_MIN_ENDSTOP_INVERTING = true; 
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -446,7 +461,7 @@
 // For example an inductive probe, or a setup that uses the nozzle to probe.
 // An inductive probe must be deactivated to go below
 // its trigger-point if hardware endstops are active.
-//#define FIX_MOUNTED_PROBE
+#define FIX_MOUNTED_PROBE
 
 // The BLTouch probe emulates a servo probe.
 //#define BLTOUCH
@@ -476,18 +491,43 @@
 //    |           |
 //    O-- FRONT --+
 //  (0,0)
-#define X_PROBE_OFFSET_FROM_EXTRUDER 10  // X offset: -left  +right  [of the nozzle]
-#define Y_PROBE_OFFSET_FROM_EXTRUDER 10  // Y offset: -front +behind [the nozzle]
-#define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
+#define X_PROBE_OFFSET_FROM_EXTRUDER 0  // X offset: -left  +right  [of the nozzle]
+#define Y_PROBE_OFFSET_FROM_EXTRUDER 24  // Y offset: -front +behind [the nozzle]
+
+// To calibrate:
+//0. Heat bed and nozzle
+//1. Move to position on bed near a corner.  
+//2. Move Z until right endstop till click.
+//3. Move other endstop above same XY.  
+//4. Move Z until click
+//5. Move nozzle to spot
+//6. Moze Z until down.
+//7. Record values below
+//#define ____RIGHT_CLICK_HEIGHT  -0.69
+//#define ____LEFT_CLICK_HEIGHT   -1.08
+//#define ____NOZZLE_HEIGHT       -0.06
+
+//#define ____RIGHT_CLICK_HEIGHT  -1.1
+//#define ____LEFT_CLICK_HEIGHT   -0.9
+
+
+#define ____RIGHT_CLICK_HEIGHT  -1.02
+#define ____LEFT_CLICK_HEIGHT   -0.80
+#define ____NOZZLE_HEIGHT       0
+
+
+#define Z_PROBE_OFFSET_FROM_EXTRUDER (____NOZZLE_HEIGHT - ____RIGHT_CLICK_HEIGHT) // Z offset: -below +above  [the nozzle] - jk: higher value is closer towards the ceiling
+#define Z2_PROBE_OFFSET_FROM_EXTRUDER (____NOZZLE_HEIGHT - ____LEFT_CLICK_HEIGHT) // Z offset: -below +above  [the nozzle] - jk: higher value is closer towards the ceiling
+
 
 // X and Y axis travel speed (mm/m) between probes
-#define XY_PROBE_SPEED 8000
+#define XY_PROBE_SPEED 6000
 // Speed for the first approach when double-probing (with PROBE_DOUBLE_TOUCH)
 #define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
 // Speed for the "accurate" probe of each point
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 2)
+#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 8)
 // Use double touch for probing
-//#define PROBE_DOUBLE_TOUCH
+#define PROBE_DOUBLE_TOUCH
 
 //
 // Allen Key Probe is defined in the Delta example configurations.
@@ -528,6 +568,7 @@
 // Enable Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN to use the Z_MIN_PIN for your Z_MIN_PROBE.
 // The Z_MIN_PIN will then be used for both Z-homing and probing.
 #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+#define Z2_MIN_PIN 19
 
 // To use a probe you must enable one of the two options above!
 
@@ -538,13 +579,13 @@
 //#define DISABLE_Z_MIN_PROBE_ENDSTOP
 
 // Enable Z Probe Repeatability test to see how accurate your probe is
-//#define Z_MIN_PROBE_REPEATABILITY_TEST
+#define Z_MIN_PROBE_REPEATABILITY_TEST
 
 //
 // Probe Raise options provide clearance for the probe to deploy, stow, and travel.
 //
-#define Z_RAISE_PROBE_DEPLOY_STOW 15 // Raise to make room for the probe to deploy / stow
-#define Z_RAISE_BETWEEN_PROBINGS 5  // Raise between probing points.
+#define Z_RAISE_PROBE_DEPLOY_STOW 3 // Raise to make room for the probe to deploy / stow
+#define Z_RAISE_BETWEEN_PROBINGS 3  // Raise between probing points.
 
 //
 // For M851 give a range for adjusting the Z probe offset
@@ -576,8 +617,8 @@
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #define INVERT_X_DIR false
-#define INVERT_Y_DIR true
-#define INVERT_Z_DIR false
+#define INVERT_Y_DIR false // CL: for HICi3 =false, was =true
+#define INVERT_Z_DIR true // CL: for HICi3 =true, was =fals
 
 // @section extruder
 
@@ -599,7 +640,7 @@
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR -1
 
-#define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
+#define min_software_endstops false // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // @section machine
@@ -608,9 +649,9 @@
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
-#define X_MAX_POS 200
-#define Y_MAX_POS 200
-#define Z_MAX_POS 200
+#define X_MAX_POS 220 //CL HIC i3 actual X bed size 220mm, was =205
+#define Y_MAX_POS 205 //CL HIC i3 actual Y bed size 270mm, was =205
+#define Z_MAX_POS 188 //CL HIC i3 actual Z height measured = 185mm, set this for your actual Z height, was =200
 
 //===========================================================================
 //========================= Filament Runout Sensor ==========================
@@ -629,14 +670,23 @@
 //============================ Mesh Bed Leveling ============================
 //===========================================================================
 
-//#define MESH_BED_LEVELING    // Enable mesh bed leveling.
+#define MESH_BED_LEVELING    // Enable mesh bed leveling.
 
 #if ENABLED(MESH_BED_LEVELING)
-  #define MESH_INSET 10        // Mesh inset margin on print area
-  #define MESH_NUM_X_POINTS 3  // Don't use more than 7 points per axis, implementation limited.
-  #define MESH_NUM_Y_POINTS 3
-  #define MESH_HOME_SEARCH_Z 4  // Z after Home, bed somewhere below but above 0.0.
-
+  #define MESH_NUM_X_POINTS 2  // Don't use more than 7 points per axis, implementation limited.
+  #define MESH_NUM_Y_POINTS 5
+  #define MESH_HOME_SEARCH_Z 3  // Z after Home, bed somewhere below but above 0.0.
+  
+  #define MESH_AUTO_LEVELING  
+  
+  // When MESH_AUTO_LEVELING is enabled the auto-probe will be used and the following values
+  // must be modified by X/Y_PROBE_OFFSET_FROM_EXTRUDER, so when defining, make sure that this would not
+  // result in an extruder position outside the bed area (X_MIN_POS, et.al.)
+  #define MESH_MIN_X (2)
+  #define MESH_MAX_X (219)
+  #define MESH_MIN_Y (0 + Y_PROBE_OFFSET_FROM_EXTRUDER)
+  #define MESH_MAX_Y (200)
+  
   //#define MESH_G28_REST_ORIGIN // After homing all axes ('G28' or 'G28 XYZ') rest at origin [0,0,0]
 
   //#define MANUAL_BED_LEVELING  // Add display menu option for bed leveling.
@@ -658,7 +708,7 @@
 // Enable this feature to get detailed logging of G28, G29, M48, etc.
 // Logging is off by default. Enable this logging feature with 'M111 S32'.
 // NOTE: Requires a huge amount of PROGMEM.
-//#define DEBUG_LEVELING_FEATURE
+#define DEBUG_LEVELING_FEATURE
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
@@ -675,14 +725,14 @@
 
   // Enable this to sample the bed in a grid (least squares solution).
   // Note: this feature generates 10KB extra code size.
-  #define AUTO_BED_LEVELING_GRID
+  //#define AUTO_BED_LEVELING_GRID
 
   #if ENABLED(AUTO_BED_LEVELING_GRID)
 
-    #define LEFT_PROBE_BED_POSITION 15
-    #define RIGHT_PROBE_BED_POSITION 170
-    #define FRONT_PROBE_BED_POSITION 20
-    #define BACK_PROBE_BED_POSITION 170
+    #define LEFT_PROBE_BED_POSITION 24
+    #define RIGHT_PROBE_BED_POSITION 197
+    #define FRONT_PROBE_BED_POSITION 24
+    #define BACK_PROBE_BED_POSITION 191
 
     #define MIN_PROBE_EDGE 10 // The Z probe minimum square sides can be no smaller than this.
 
@@ -694,12 +744,13 @@
 
     // Arbitrary points to probe.
     // A simple cross-product is used to estimate the plane of the bed.
-    #define ABL_PROBE_PT_1_X 15
-    #define ABL_PROBE_PT_1_Y 180
-    #define ABL_PROBE_PT_2_X 15
-    #define ABL_PROBE_PT_2_Y 20
-    #define ABL_PROBE_PT_3_X 170
-    #define ABL_PROBE_PT_3_Y 20
+    #define ABL_PROBE_PT_1_X (0 + X_PROBE_OFFSET_FROM_EXTRUDER)
+    #define ABL_PROBE_PT_1_Y (170 + Y_PROBE_OFFSET_FROM_EXTRUDER)
+    #define ABL_PROBE_PT_2_X (0 + X_PROBE_OFFSET_FROM_EXTRUDER)
+    #define ABL_PROBE_PT_2_Y (0 + Y_PROBE_OFFSET_FROM_EXTRUDER)
+    #define ABL_PROBE_PT_3_X (170 + X_PROBE_OFFSET_FROM_EXTRUDER)
+    #define ABL_PROBE_PT_3_Y (0 + Y_PROBE_OFFSET_FROM_EXTRUDER)
+    
 
   #endif // !AUTO_BED_LEVELING_GRID
 
@@ -749,18 +800,39 @@
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,4000,500}  // default steps per unit for Ultimaker
-#define DEFAULT_MAX_FEEDRATE          {300, 300, 5, 25}    // (mm/sec)
-#define DEFAULT_MAX_ACCELERATION      {3000,3000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
+// Default AXIS STEPS, MAX_FEEDRATE, ACCLERATION settings
 
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000    // E acceleration in mm/s^2 for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
+// Default AXIS STEP Settings (motor steps) X, Y, Z, E
+// 1a) default axis steps per unit for Ultimaker steps/mm ={8.7402,78.7402,200.0*8/3,760*1.1}
+// 1b) default axis steps per unit for HIC i3 steps/mm ={80,80,2560,94.4962144}, OEM z-axis threaded rods =8mm wide x 1.25mm pitch
+//#define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,2560,94.4962144} // original default for HIC i3, (steps/mm)
+//#define DEFAULT_AXIS_STEPS_PER_UNIT {80, 80, 398.2, 102} // CL: default steps for _my_ HIC i3, you may need to change the Z and/or E for your machine
+#define DEFAULT_AXIS_STEPS_PER_UNIT {80, 80, 398.2, 102} // CL: default steps for _my_ HIC i3, you may need to change the Z and/or E for your machine
+
+// Default MAXIMUM FEEDRATES (motor speeds) X, Y, Z, E - GLOBAL for printing and non-printing
+//#define DEFAULT_MAX_FEEDRATE {200, 200, 5, 17} // (mm/sec) default for Makerbot i3
+//#define DEFAULT_MAX_FEEDRATE {300, 300, 5, 25} // (mm/sec) default for Marlin
+//#define DEFAULT_MAX_FEEDRATE {500, 500, 5, 25} // (mm/sec) original default for HIC i3
+#define DEFAULT_MAX_FEEDRATE {200, 200, 3, 25} // (mm/sec) CL: default HIC i3
+
+// Default MAXIMUM ACCELERATION (motor) X, Y, Z, E=(extrusion only) - max start speeds for accelrated moves
+// NOTE: value stored in DEFAULT_ACCELERATION if lower, will limit these MAX rates
+//#define DEFAULT_MAX_ACCELERATION {3000,3000,100,10000} // (mm/sec^2) Marlin default - X, Y, Z, E(moves) maximum start speed for accelerated moves
+//#define DEFAULT_MAX_ACCELERATION {9000,9000,100,10000} // (mm/sec^2) original default for HIC i3 - X, Y, Z, E(moves) maximum start speed for accelerated moves
+#define DEFAULT_MAX_ACCELERATION {1200, 1200, 100, 10000} // (mm/sec^2) CL: default for HIC i3 - X, Y, Z, E(moves) maximum start speed for accelerated moves
+// E default values are good for Skeinforge 40+, for older versions raise them a lot.
+
+// Default misc. ACCELERATIONS
+//#define DEFAULT_ACCELERATION 500 // (mm/sec^2) default for Makerbot i3 - X, Y, Z and E max acceleration for printing moves
+#define DEFAULT_ACCELERATION          1200 // (mm/sec^2) CL: default for HIC i3 - X, Y, Z and E max acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  1200 // (mm/sec^2) CL: default for HIC i3 E acceleration for retracts (fliament purge and feed)
+#define DEFAULT_TRAVEL_ACCELERATION   3000 // (mm/sec^2) CL: default for HIC i3 X, Y, Z acceleration for travel (non-printing) moves
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK                20.0    // (mm/sec)
-#define DEFAULT_ZJERK                 0.4     // (mm/sec)
-#define DEFAULT_EJERK                 5.0    // (mm/sec)
+// default jerk values for HIC i3 ={20.0, 0.4, 5.0} (mm/sec)
+#define DEFAULT_XYJERK                10.0 // (mm/sec) CL: new default for HIC i3, was =20
+#define DEFAULT_ZJERK                 0.4  // (mm/sec)
+#define DEFAULT_EJERK                 5.0  // (mm/sec)
 
 
 //=============================================================================
@@ -811,12 +883,12 @@
 // @section temperature
 
 // Preheat Constants
-#define PREHEAT_1_TEMP_HOTEND 180
-#define PREHEAT_1_TEMP_BED     70
+#define PREHEAT_1_TEMP_HOTEND 205
+#define PREHEAT_1_TEMP_BED     60
 #define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
 
 #define PREHEAT_2_TEMP_HOTEND 240
-#define PREHEAT_2_TEMP_BED    110
+#define PREHEAT_2_TEMP_BED    100
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
 
 //
@@ -981,7 +1053,7 @@
 // SD Card support is disabled by default. If your controller has an SD slot,
 // you must uncomment the following option or it won't work.
 //
-//#define SDSUPPORT
+#define SDSUPPORT // CL: HICi3 LCD panel, was =not enabled
 
 //
 // SD CARD: SPI SPEED
@@ -989,7 +1061,7 @@
 // Uncomment ONE of the following items to use a slower SPI transfer
 // speed. This is usually required if you're getting volume init errors.
 //
-//#define SPI_SPEED SPI_HALF_SPEED
+#define SPI_SPEED SPI_HALF_SPEED // (CL: HICi3 LCD panel (TEST), was =not enabled
 //#define SPI_SPEED SPI_QUARTER_SPEED
 //#define SPI_SPEED SPI_EIGHTH_SPEED
 
@@ -998,7 +1070,7 @@
 //
 // Use CRC checks and retries on the SD communication.
 //
-//#define SD_CHECK_AND_RETRY
+#define SD_CHECK_AND_RETRY // (CL: HICi3 LCD panel (TEST), was =not enabled
 
 //
 // ENCODER SETTINGS
@@ -1006,13 +1078,13 @@
 // This option overrides the default number of encoder pulses needed to
 // produce one step. Should be increased for high-resolution encoders.
 //
-//#define ENCODER_PULSES_PER_STEP 1
+#define ENCODER_PULSES_PER_STEP 4 // CL: HICi3 =4, was =1
 
 //
 // Use this option to override the number of step signals required to
 // move between next/prev menu items.
 //
-//#define ENCODER_STEPS_PER_MENU_ITEM 5
+#define ENCODER_STEPS_PER_MENU_ITEM 1
 
 /**
  * Encoder Direction Options
@@ -1029,7 +1101,7 @@
 //
 //  Set this option if CLOCKWISE causes values to DECREASE
 //
-//#define REVERSE_ENCODER_DIRECTION
+#define REVERSE_ENCODER_DIRECTION
 
 //
 // This option reverses the encoder direction for navigating LCD menus.
@@ -1139,7 +1211,7 @@
 // RepRapDiscount FULL GRAPHIC Smart Controller
 // http://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-//#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 //
 // MakerLab Mini Panel with graphic

@@ -69,7 +69,7 @@
    *      D27 = A0    D29 = LCS          D49 = SDCD  RST = ---
    *      GND = GND   5V  = 5V           GND = ---   D41 = ---
    */
-
+asdfds
   #undef BTN_EN1
   #undef BTN_EN2
   #undef BTN_ENC

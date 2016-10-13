@@ -419,6 +419,7 @@
 #define Y_MAX_ENDSTOP_INVERTING true  // set to true to invert the logic of the endstop.
 #define Z_MAX_ENDSTOP_INVERTING true  // set to true to invert the logic of the endstop.
 #define Z_MIN_PROBE_ENDSTOP_INVERTING true  // set to true to invert the logic of the endstop.
+#define Z2_MIN_ENDSTOP_INVERTING true
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -519,7 +520,9 @@
 
 // Enable Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN to use the Z_MIN_PIN for your Z_MIN_PROBE.
 // The Z_MIN_PIN will then be used for both Z-homing and probing.
-#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+//#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+
+#define Z2_MIN_PIN  32
 
 // To use a probe you must enable one of the two options above!
 

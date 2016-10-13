@@ -2167,6 +2167,8 @@ static void clean_up_after_endstop_or_probe_move() {
         SERIAL_ECHOLNPGM(")");
       }
     #endif
+
+    
     feedrate_mm_m = XY_PROBE_FEEDRATE_MM_M;
     do_blocking_move_to_xy(x - (X_PROBE_OFFSET_FROM_EXTRUDER), y - (Y_PROBE_OFFSET_FROM_EXTRUDER));
 
@@ -2175,8 +2177,25 @@ static void clean_up_after_endstop_or_probe_move() {
     #endif
     if (DEPLOY_PROBE()) return NAN;
 
+        
+    #ifdef HAS_Z2_MIN
+        if (x > (X_MIN_POS + X_MAX_POS) / 2) {
+            endstops.use_z1(false);
+            endstops.use_z2(true);        
+        } else {
+            endstops.use_z1(true);
+            endstops.use_z2(false);        
+        }
+    #endif
+    
+    
     float measured_z = run_z_probe();
-
+    
+    #ifdef HAS_Z2_MIN
+        endstops.use_z1(true);
+        endstops.use_z2(false);      
+    #endif
+    
     if (stow) {
       #if ENABLED(DEBUG_LEVELING_FEATURE)
         if (DEBUGGING(LEVELING)) SERIAL_ECHOPGM("> ");
@@ -3208,6 +3227,16 @@ inline void gcode_G28() {
   inline void _mbl_goto_xy(float x, float y) {
     float old_feedrate_mm_m = feedrate_mm_m;
     feedrate_mm_m = homing_feedrate_mm_m[X_AXIS];
+    
+    /*#ifdef HAS_Z2_MIN
+        if (x > (X_MIN_POS + X_MAX_POS) / 2) {
+            endstops.use_z1(false);
+            endstops.use_z2(true);        
+        } else {
+            endstops.use_z1(true);
+            endstops.use_z2(false);        
+        }
+    #endif*/
 
     current_position[Z_AXIS] = MESH_HOME_SEARCH_Z
       #if Z_RAISE_BETWEEN_PROBINGS > MIN_Z_HEIGHT_FOR_HOMING
@@ -3229,6 +3258,11 @@ inline void gcode_G28() {
 
     feedrate_mm_m = old_feedrate_mm_m;
     stepper.synchronize();
+    
+    #ifdef HAS_Z2_MIN
+        //endstops.use_z1(true);
+        //endstops.use_z2(true);
+    #endif
   }
 
   /**
@@ -3253,8 +3287,71 @@ inline void gcode_G28() {
    *
    */
   inline void gcode_G29() {
+    int i;
+    
+    // Don't allow auto-leveling without homing first
+    if (axis_unhomed_error(true, true, true)) return;
+        
+    int verbose_level = code_seen('V') ? code_value_int() : 1;
+    if (verbose_level < 0 || verbose_level > 4) {
+      SERIAL_ECHOLNPGM("?(V)erbose Level is implausible (0-4).");
+      return;
+    }
+    
+    ///@TODO
+    verbose_level = 4;
 
-    static int probe_point = -1;
+    bool dryrun = code_seen('D');
+    bool stow_probe_after_each = code_seen('E');
+        
+    setup_for_endstop_or_probe_move();
+
+    // Deploy the probe. Probe will raise if needed.
+    if (DEPLOY_PROBE()) return;
+    
+    mbl.reset();
+        
+    int8_t px, py;
+    float x, y;
+    
+    for (i = 0; i < (MESH_NUM_X_POINTS) * (MESH_NUM_Y_POINTS); i++) {
+        mbl.zigzag(i, px, py);
+        x = mbl.get_probe_x(px);
+        y = mbl.get_probe_y(py);
+        SERIAL_ECHO_START;
+        SERIAL_ECHO("Pt:");
+        SERIAL_ECHO(i);
+        SERIAL_ECHO(" X:");
+        SERIAL_ECHO(x);
+        SERIAL_ECHO(" Y:");
+        SERIAL_ECHOLN(y);
+        
+        
+        float z_at_pt_1 = probe_pt( x, y, stow_probe_after_each, verbose_level );
+        
+        #ifdef HAS_Z2_MIN
+            if (x > (X_MIN_POS + X_MAX_POS) / 2) {
+                z_at_pt_1 += Z2_PROBE_OFFSET_FROM_EXTRUDER;
+            } else {
+                z_at_pt_1 += Z_PROBE_OFFSET_FROM_EXTRUDER;
+            }
+        #endif
+        
+        SERIAL_ECHO_START;
+        SERIAL_ECHO("ProbedZ:");
+        SERIAL_ECHOLN(z_at_pt_1);
+        mbl.set_zigzag_z(i, z_at_pt_1);
+    }
+    mbl.set_has_mesh(true);   
+    
+    // Raise to _Z_RAISE_PROBE_DEPLOY_STOW. Stow the probe.
+    if (STOW_PROBE()) return;
+
+    // Restore state after probing
+    clean_up_after_endstop_or_probe_move();
+    enqueue_and_echo_commands_P(PSTR("G28"));
+  
+    /*static int probe_point = -1;
     MeshLevelingState state = code_seen('S') ? (MeshLevelingState)code_value_byte() : MeshReport;
     if (state < 0 || state > 5) {
       SERIAL_PROTOCOLLNPGM("S out of range (0-5).");
@@ -3389,7 +3486,7 @@ inline void gcode_G28() {
 
     } // switch(state)
 
-    report_current_position();
+    report_current_position();*/
   }
 
 #elif ENABLED(AUTO_BED_LEVELING_FEATURE)

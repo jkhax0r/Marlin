@@ -33,14 +33,16 @@ class Endstops {
 
   public:
 
+    static bool use_z1_pin;
+    static bool use_z2_pin;
     static bool enabled, enabled_globally;
     static volatile char endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_PROBE as BIT value
 
-    #if ENABLED(Z_DUAL_ENDSTOPS)
+//    #if ENABLED(Z_DUAL_ENDSTOPS)
       static uint16_t
-    #else
-      static byte
-    #endif
+//    #else
+//      static byte
+//    #endif
         current_endstop_bits, old_endstop_bits;
 
     Endstops() {};
@@ -64,6 +66,9 @@ class Endstops {
      * Report endstop positions in response to M119
      */
     static void M119();
+    
+    static void use_z1(bool use) { use_z1_pin = use; }
+    static void use_z2(bool use) { use_z2_pin = use; }
 
     // Enable / disable endstop checking globally
     static void enable_globally(bool onoff=true) { enabled_globally = enabled = onoff; }

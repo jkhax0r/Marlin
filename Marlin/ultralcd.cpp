@@ -1221,7 +1221,7 @@ void kill_screen(const char* lcd_msg) {
     //
     // Level Bed
     //
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_AUTO_LEVELING)
       MENU_ITEM(gcode, MSG_LEVEL_BED,
         axis_homed[X_AXIS] && axis_homed[Y_AXIS] ? PSTR("G29") : PSTR("G28\nG29")
       );
@@ -1345,7 +1345,7 @@ void kill_screen(const char* lcd_msg) {
       manual_move_to_current(axis);
       lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
     }
-    if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr41sign(current_position[axis]));
+    if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr52sign(current_position[axis]));
   }
   #if ENABLED(DELTA)
     static float delta_clip_radius_2 =  (DELTA_PRINTABLE_RADIUS) * (DELTA_PRINTABLE_RADIUS);
@@ -1465,6 +1465,10 @@ void kill_screen(const char* lcd_msg) {
     move_menu_scale = 0.1;
     _lcd_move_menu_axis();
   }
+  static void lcd_move_menu_001mm() {
+    move_menu_scale = 0.01;
+    _lcd_move_menu_axis();
+  }
 
   /**
    *
@@ -1481,6 +1485,8 @@ void kill_screen(const char* lcd_msg) {
 
     MENU_ITEM(submenu, MSG_MOVE_1MM, lcd_move_menu_1mm);
     MENU_ITEM(submenu, MSG_MOVE_01MM, lcd_move_menu_01mm);
+    MENU_ITEM(submenu, "Move 0.01mm", lcd_move_menu_001mm);
+    
     //TODO:X,Y,Z,E
     END_MENU();
   }
